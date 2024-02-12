@@ -3,5 +3,9 @@
 -ifdef(PROD).
 -include("config.prod.hrl").
 -else.
+-ifdef(SIM).
+-include("config.sim.hrl").
+-else.
 -include("config.dev.hrl").
+-endif.
 -endif.

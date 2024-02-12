@@ -1,0 +1,8 @@
+-define(DEFAULT_STA_SSID, <<"Wokwi-GUEST">>).
+-define(DEFAULT_STA_PSK, <<"">>).
+-define(DEFAULT_NTP_HOST, "pool.ntp.org").
+-define(DEFAULT_GW_HOST, {192, 168, 0, 20}).
+-define(DEFAULT_GW_DATA_PORT, 9999).
+-define(DEFAULT_GW_COMM_PORT, 9998).
+-define(DEFAULT_GW_HANDLER, c3card_gateway_command).
+-define(DEFAULT_SENSORS, []).
