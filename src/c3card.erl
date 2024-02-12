@@ -43,12 +43,12 @@ loop(State) ->
 
     handle_buttons(Buttons),
 
-    case c3card_data:send_data(Payload) of
-	ok ->
-	    ok;
-	Error ->
-	    ?LOG_ERROR("error sending data: ~p", [Error])
-    end,
+%    case c3card_data:send_data(Payload) of
+%	ok ->
+%	    ok;
+%	Error ->
+%	    ?LOG_ERROR("error sending data: ~p", [Error])
+%    end,
     loop(State).
 
 handle_buttons(#{1 := low}) ->

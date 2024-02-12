@@ -38,7 +38,8 @@ init([]) ->
     ChildSpecs =
 	[
 	 worker(c3card_screen, Config, [{i2c_bus, I2CBus}, {gpio, GPIO}]),
-	 worker(c3card_data, Config, []),
+   % crashes as server is not available
+   % worker(c3card_data, Config, []),
 	 worker(c3card_comm, Config, []),
 	 worker(c3card_buttons, Config, [{gpio, GPIO}]),
 	 worker(c3card_neopixel, Config, []),

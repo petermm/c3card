@@ -65,7 +65,8 @@ start_link(Config) ->
 %% @private
 init(_Config) ->
     {ok, NeoPixel} = neopixel:start(?NEOPIXEL_PIN, ?NEOPIXEL_TOTAL_PIXELS),
-    ok = neopixel:clear(NeoPixel),
+    % clear has issues on sim for some reason
+    %ok = neopixel:clear(NeoPixel),
     ?LOG_NOTICE("starting neopixels"),
     {ok, #{neopixel => NeoPixel}}.
 
