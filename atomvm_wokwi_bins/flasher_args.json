@@ -15,7 +15,9 @@
   "flash_files": {
     "0x0": "bootloader/bootloader.bin",
     "0x10000": "atomvm-esp32.bin",
-    "0x8000": "partition_table/partition-table.bin"
+    "0x8000": "partition_table/partition-table.bin",
+    "0x1D0000": "esp32boot.avm",
+    "0x210000": "../_build/sim/lib/c3card.avm"
   },
   "bootloader": {
     "offset": "0x0",
@@ -30,6 +32,16 @@
   "partition-table": {
     "offset": "0x8000",
     "file": "partition_table/partition-table.bin",
+    "encrypted": "false"
+  },
+  "esp32boot": {
+    "offset": "0x1D0000",
+    "file": "esp32boot.avm",
+    "encrypted": "false"
+  },
+  "c3card": {
+    "offset": "0x210000",
+    "file": "../_build/sim/lib/c3card.avm",
     "encrypted": "false"
   },
   "extra_esptool_args": {
