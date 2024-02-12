@@ -1,0 +1,13 @@
+{
+    "filewatcher.commands": [
+        {
+            "match": "\\.erl*",
+            "isAsync": true,
+            "vscodeTask": [
+                "workbench.action.tasks.runTask",
+                "AtomVM Sim Repack"
+            ],
+            "event": "onFileChange"
+        }
+    ]
+}
