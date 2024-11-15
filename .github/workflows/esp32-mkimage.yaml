@@ -92,7 +92,7 @@ jobs:
 
     - name: "Clone AtomVM"
       run: |
-        git clone https://github.com/atomvm/AtomVM
+        git clone https://github.com/atomvm/AtomVM -b release-0.6
 
     - name: "Build: create build dir"
       run: mkdir build
@@ -133,7 +133,9 @@ jobs:
       run: |
         git clone https://github.com/atomvm/atomvm_neopixel
         git clone https://github.com/atomvm/atomvm_mqtt_client
-        git clone --branch resource_nif https://github.com/arpunk/atomvm_adc
+        git clone https://github.com/atomvm/atomvm_gps
+        git clone https://github.com/atomvm/atomgl
+
 
     - name: "Build ${{ matrix.soc }} with idf.py"
       shell: bash
@@ -215,7 +217,7 @@ jobs:
       - name: Create manifest.json
         run: |
           ATOMVM_IMG="AtomVM-c3card-${{ matrix.soc }}-${{ github.ref_name }}.img"
-          VERSION=$(git describe --tags)
+          VERSION=$(git describe --tags --always)
           jq -n \
             --arg name "AtomVM-c3card-${{ matrix.soc }}-${{ github.ref_name }}" \
             --arg version "$VERSION" \

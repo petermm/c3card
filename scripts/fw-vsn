@@ -1,11 +1,11 @@
 #!/usr/bin/env escript
 
--define(GIT_CMD, "git describe --tags").
+-define(GIT_CMD, "git describe --tags --always").
 
 main(_Args) ->
     Version = string:trim(os:cmd(?GIT_CMD)),
     [Tag | _] = string:split(Version, "-"),
-    ok = file:write_file("./VERSION", string:strip(Version, left, $v)),
+    ok = file:write_file("./VERSION", Version),
     ok = file:write_file(
         "./include/version.hrl",
         io_lib:format("-define(VERSION, ~p).~n-define(TAG, ~p).", [Version, Tag]),
