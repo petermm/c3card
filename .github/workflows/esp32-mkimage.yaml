@@ -133,7 +133,6 @@ jobs:
       run: |
         git clone https://github.com/atomvm/atomvm_neopixel
         git clone https://github.com/atomvm/atomvm_mqtt_client
-        git clone https://github.com/atomvm/atomvm_gps
         git clone https://github.com/atomvm/atomgl
 
 
