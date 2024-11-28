@@ -214,7 +214,7 @@ jobs:
       - name: Create manifest.json
         run: |
           ATOMVM_IMG="AtomVM-c3card-${{ matrix.soc }}-${{ github.ref_name }}.img"
-          VERSION=$(git describe --tags)
+          VERSION=$(git describe --tags --always)
           jq -n \
             --arg name "AtomVM-c3card-${{ matrix.soc }}-${{ github.ref_name }}" \
             --arg version "$VERSION" \

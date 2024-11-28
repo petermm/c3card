@@ -1,14 +1,16 @@
 #!/usr/bin/env escript
 
--define(GIT_CMD, "git describe --tags").
+-define(GIT_CMD, "git describe --tags --always").
 
 main(_Args) ->
     Version = string:trim(os:cmd(?GIT_CMD)),
     [Tag | _] = string:split(Version, "-"),
-    ok = file:write_file("./VERSION", string:strip(Version, left, $v)),
+    ok = file:write_file("./VERSION", Version),
+    % display code crashes if Tag string is longer than 6 chars.
+    TagTrimmed = string:substr(Tag, 1, 6),
     ok = file:write_file(
         "./include/version.hrl",
-        io_lib:format("-define(VERSION, ~p).~n-define(TAG, ~p).", [Version, Tag]),
+        io_lib:format("-define(VERSION, ~p).~n-define(TAG, ~p).", [Version, TagTrimmed]),
         [write]
     ),
     ok.
