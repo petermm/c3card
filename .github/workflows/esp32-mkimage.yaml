@@ -9,11 +9,11 @@ name: esp32-mkimage
 on:
   push:
     paths:
-      - '.github/workflows/esp32-mkimage.yaml'
+      - ".github/workflows/esp32-mkimage.yaml"
   pull_request:
     paths:
-      - '.github/workflows/esp32-mkimage.yaml'
-      - 'src/**'
+      - ".github/workflows/esp32-mkimage.yaml"
+      - "src/**"
   workflow_dispatch:
 
 permissions:
@@ -39,7 +39,7 @@ jobs:
         otp: ["26"]
         elixir_version: ["1.16"]
         compiler_pkgs: ["clang-15"]
-        soc: ["esp32c3"]
+        soc: ["esp32c3", "esp32s3"]
 
     env:
       CC: ${{ matrix.cc }}
@@ -49,130 +49,130 @@ jobs:
       ImageOS: "ubuntu22"
 
     steps:
-    - name: Checkout repo
-      uses: actions/checkout@v4
-      with:
-        fetch-tags: true
-        fetch-depth: 0
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-tags: true
+          fetch-depth: 0
 
-    - uses: erlef/setup-beam@v1
-      with:
-        otp-version: ${{ matrix.otp }}
-        elixir-version: ${{ matrix.elixir_version }}
-        rebar3-version: '3.23.0'
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: ${{ matrix.otp }}
+          elixir-version: ${{ matrix.elixir_version }}
+          rebar3-version: "3.23.0"
 
-    - name: "Install dependencies"
-      run: |
-        apt update -y
-        DEBIAN_FRONTEND=noninteractive apt install -y ${{ matrix.compiler_pkgs}} git cmake gperf zlib1g-dev
+      - name: "Install dependencies"
+        run: |
+          apt update -y
+          DEBIAN_FRONTEND=noninteractive apt install -y ${{ matrix.compiler_pkgs}} git cmake gperf zlib1g-dev
 
-    # needed for generating AtomVM version when running in a docker container
-    - name: "Configure Git"
-      run: |
-        git config --global --add safe.directory /__w/c3card/c3card
-        echo -n "git rev-parse: "
-        git rev-parse --short HEAD
+      # needed for generating AtomVM version when running in a docker container
+      - name: "Configure Git"
+        run: |
+          git config --global --add safe.directory /__w/c3card/c3card
+          echo -n "git rev-parse: "
+          git rev-parse --short HEAD
 
-    # Builder info
-    - name: "System info"
-      run: |
-        echo "**uname:**"
-        uname -a
-        echo "**libc version:**"
-        ldd --version
-        echo "**C Compiler version:**"
-        $CC --version
-        $CXX --version
-        echo "**Linker version:**"
-        ld --version
-        echo "**CMake version:**"
-        cmake --version
-        echo "**OTP version:**"
-        cat $(dirname $(which erlc))/../releases/RELEASES || true
+      # Builder info
+      - name: "System info"
+        run: |
+          echo "**uname:**"
+          uname -a
+          echo "**libc version:**"
+          ldd --version
+          echo "**C Compiler version:**"
+          $CC --version
+          $CXX --version
+          echo "**Linker version:**"
+          ld --version
+          echo "**CMake version:**"
+          cmake --version
+          echo "**OTP version:**"
+          cat $(dirname $(which erlc))/../releases/RELEASES || true
 
-    - name: "Clone AtomVM"
-      run: |
-        git clone https://github.com/atomvm/AtomVM -b release-0.6
+      - name: "Clone AtomVM"
+        run: |
+          git clone https://github.com/atomvm/AtomVM -b release-0.6
 
-    - name: "Build: create build dir"
-      run: mkdir build
+      - name: "Build: create build dir"
+        run: mkdir build
 
-    - name: "Build: run cmake"
-      working-directory: build
-      run: |
-        cmake ../AtomVM
-        # git clone will use more recent timestamps than cached beam files
-        # touch them so we can benefit from the cache and avoid costly beam file rebuild.
-        find . -name '*.beam' -exec touch {} \;
+      - name: "Build: run cmake"
+        working-directory: build
+        run: |
+          cmake ../AtomVM
+          # git clone will use more recent timestamps than cached beam files
+          # touch them so we can benefit from the cache and avoid costly beam file rebuild.
+          find . -name '*.beam' -exec touch {} \;
 
-    - name: "Build erlang and Elixir libs"
-      working-directory: build/libs
-      run: |
-        LANG=en_US.UTF-8 make
+      - name: "Build erlang and Elixir libs"
+        working-directory: build/libs
+        run: |
+          LANG=en_US.UTF-8 make
 
-    - name: "Build the c3card firmware"
-      working-directory: .
-      run: |
-        rebar3 atomvm packbeam
+      - name: "Build the c3card firmware"
+        working-directory: .
+        run: |
+          rebar3 atomvm packbeam
 
-    - name: "Copy mkimage.config.in template"
-      working-directory: .
-      run: |
-        cp ./installer/mkimage.config.in ./AtomVM/src/platforms/esp32/tools/
+      - name: "Copy mkimage.config.in template"
+        working-directory: .
+        run: |
+          cp ./installer/mkimage.config.in ./AtomVM/src/platforms/esp32/tools/
 
-    - name: "Use release defaults"
-      if: startsWith(github.ref, 'refs/tags/')
-      shell: bash
-      working-directory: ./AtomVM/src/platforms/esp32/
-      run: |
-        cp sdkconfig.release-defaults sdkconfig.defaults
+      - name: "Use release defaults"
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        working-directory: ./AtomVM/src/platforms/esp32/
+        run: |
+          cp sdkconfig.release-defaults sdkconfig.defaults
 
-    - name: "Clone required components"
-      shell: bash
-      working-directory: ./AtomVM/src/platforms/esp32/components/
-      run: |
-        git clone https://github.com/atomvm/atomvm_neopixel
-        git clone https://github.com/atomvm/atomvm_mqtt_client
+      - name: "Clone required components"
+        shell: bash
+        working-directory: ./AtomVM/src/platforms/esp32/components/
+        run: |
+          git clone https://github.com/atomvm/atomvm_neopixel
+          git clone https://github.com/atomvm/atomvm_mqtt_client
 
-    - name: "Build ${{ matrix.soc }} with idf.py"
-      shell: bash
-      working-directory: ./AtomVM/src/platforms/esp32/
-      run: |
-        rm -rf build
-        . $IDF_PATH/export.sh
-        idf.py set-target ${{ matrix.soc }}
-        idf.py reconfigure
-        idf.py build
+      - name: "Build ${{ matrix.soc }} with idf.py"
+        shell: bash
+        working-directory: ./AtomVM/src/platforms/esp32/
+        run: |
+          rm -rf build
+          . $IDF_PATH/export.sh
+          idf.py set-target ${{ matrix.soc }}
+          idf.py reconfigure
+          idf.py build
 
-    - name: "Create a ${{ matrix.soc }} image"
-      working-directory: ./AtomVM/src/platforms/esp32/build
-      run: |
-        ./mkimage.sh
-        ls -l *.img
+      - name: "Create a ${{ matrix.soc }} image"
+        working-directory: ./AtomVM/src/platforms/esp32/build
+        run: |
+          ./mkimage.sh
+          ls -l *.img
 
-    - name: "Upload ${{ matrix.soc }} artifacts"
-      uses: actions/upload-artifact@v4
-      with:
-        name: atomvm-c3card-${{ matrix.soc }}-image
-        path: ./AtomVM/src/platforms/esp32/build/atomvm-${{ matrix.soc }}.img
-        if-no-files-found: error
+      - name: "Upload ${{ matrix.soc }} artifacts"
+        uses: actions/upload-artifact@v4
+        with:
+          name: atomvm-c3card-${{ matrix.soc }}-image
+          path: ./AtomVM/src/platforms/esp32/build/atomvm-${{ matrix.soc }}.img
+          if-no-files-found: error
 
-    - name: "Rename and write sha256sum"
-      shell: bash
-      working-directory: ./AtomVM/src/platforms/esp32/build
-      run: |
-        ATOMVM_IMG="AtomVM-c3card-${{ matrix.soc }}-${{ github.ref_name }}.img"
-        mv atomvm-${{ matrix.soc }}.img "${ATOMVM_IMG}"
-        sha256sum "${ATOMVM_IMG}" > "${ATOMVM_IMG}.sha256"
+      - name: "Rename and write sha256sum"
+        shell: bash
+        working-directory: ./AtomVM/src/platforms/esp32/build
+        run: |
+          ATOMVM_IMG="AtomVM-c3card-${{ matrix.soc }}-${{ github.ref_name }}.img"
+          mv atomvm-${{ matrix.soc }}.img "${ATOMVM_IMG}"
+          sha256sum "${ATOMVM_IMG}" > "${ATOMVM_IMG}.sha256"
 
-    - name: Release
-      uses: softprops/action-gh-release@v2
-      with:
-        draft: true
-        fail_on_unmatched_files: true
-        files: |
-          ./AtomVM/src/platforms/esp32/build/AtomVM-c3card-${{ matrix.soc }}-${{ github.ref_name }}.img
-          ./AtomVM/src/platforms/esp32/build/AtomVM-c3card-${{ matrix.soc }}-${{ github.ref_name }}.img.sha256
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          fail_on_unmatched_files: true
+          files: |
+            ./AtomVM/src/platforms/esp32/build/AtomVM-c3card-${{ matrix.soc }}-${{ github.ref_name }}.img
+            ./AtomVM/src/platforms/esp32/build/AtomVM-c3card-${{ matrix.soc }}-${{ github.ref_name }}.img.sha256
 
   publish:
     name: "Publish new firmware and website to GitHub Pages"
@@ -190,7 +190,7 @@ jobs:
         otp: ["26"]
         elixir_version: ["1.16"]
         compiler_pkgs: ["clang-15"]
-        soc: ["esp32c3"]
+        soc: ["esp32c3", "esp32s3"]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -200,8 +200,8 @@ jobs:
       - name: Setup Erlang
         uses: erlef/setup-beam@v1
         with:
-          otp-version: '26.2'
-          rebar3-version: '3.23.0'
+          otp-version: "26.2"
+          rebar3-version: "3.23.0"
       - name: Setup Pages
         uses: actions/configure-pages@v4
       - name: Generate documentation
@@ -213,12 +213,13 @@ jobs:
           path: output
       - name: Create manifest.json
         run: |
+          SOC_NAME=$(echo "${{ matrix.soc }}" | awk '{print toupper(substr($0, 1, 5)) "-" substr($0, 6)}')
           ATOMVM_IMG="AtomVM-c3card-${{ matrix.soc }}-${{ github.ref_name }}.img"
           VERSION=$(git describe --tags --always)
           jq -n \
             --arg name "AtomVM-c3card-${{ matrix.soc }}-${{ github.ref_name }}" \
             --arg version "$VERSION" \
-            '{"name": $name, "version": $version, "builds": [{"chipFamily":"ESP32-C3", "parts": [{"path": "AtomVM-c3card-${{ matrix.soc }}-${{ github.ref_name }}.img", "offset": 0}]}]}' > doc/manifest.json
+            '{"name": $name, "version": $version, "builds": [{"chipFamily":${SOC_NAME}, "parts": [{"path": "AtomVM-c3card-${{ matrix.soc }}-${{ github.ref_name }}.img", "offset": 0}]}]}' > doc/manifest.json
           mv output/atomvm-${{ matrix.soc }}.img doc/"${ATOMVM_IMG}"
           ls -R .
       - name: Upload artifact
